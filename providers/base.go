@@ -22,6 +22,10 @@ func (z ZoneProvider) GetProvider() BaseProvider {
 		{
 			provider = AdmanProvider{}
 		}
+	case "regru":
+		{
+			provider = RegruProvider{}
+		}
 	}
 
 	mapstructure.Decode(z.BaseProvider, &provider)
