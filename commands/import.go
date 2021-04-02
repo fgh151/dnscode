@@ -3,8 +3,24 @@ package commands
 import (
 	"encoding/json"
 	"io/ioutil"
+	"openitstudio.ru/dnscode/providers"
 	"openitstudio.ru/dnscode/utils"
 )
+
+func GetRemoteZones(configFile string) providers.Zones {
+	var localZones = utils.GetZonesFromConfig(configFile)
+	var remoteZones = providers.Zones{}
+
+	for i := 0; i < len(localZones.Zones); i++ {
+		currentZone := providers.ZoneProvider{Name: localZones.Zones[i].Name}
+		provider := localZones.Zones[i].GetProvider()
+		records := provider.GetRecords(localZones.Zones[i].Name)
+		currentZone.Records = append(currentZone.Records, records...)
+		remoteZones.Zones = append(remoteZones.Zones, currentZone)
+	}
+
+	return remoteZones
+}
 
 func ImportDomains(configFile string, fileToSave string, useImport bool) {
 

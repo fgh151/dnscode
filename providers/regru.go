@@ -2,7 +2,6 @@ package providers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -74,8 +73,6 @@ func (r RegruProvider) GetRecords(domain string) []DnsRecord {
 
 	var rResp RegruResponse
 	json.Unmarshal(body, &rResp)
-
-	fmt.Println(rResp.Answer.Domains[0].Rrs)
 
 	var returnAr []DnsRecord
 

@@ -20,16 +20,18 @@ func main() {
 	}
 
 	importCommand := flag.NewFlagSet("import", flag.ExitOnError)
-
 	importTextPtr := importCommand.String("filename", "", "File name to save. If empty it will override "+FILENAME)
 	importDirectiveImportPtr := importCommand.Bool("useImport", true, "Use import directive, default true")
+
+	planCommand := flag.NewFlagSet("plan", flag.ExitOnError)
+	planForceDeletePtr := planCommand.Bool("force", false, "Force delete")
 
 	switch os.Args[1] {
 	case "import":
 		importCommand.Parse(os.Args[2:])
 
-	//case "count":
-	//	countCommand.Parse(os.Args[2:])
+	case "plan":
+		planCommand.Parse(os.Args[2:])
 	default:
 		flag.PrintDefaults()
 		os.Exit(1)
@@ -42,8 +44,11 @@ func main() {
 			filename = FILENAME
 		}
 
-		fmt.Println(filename)
 		fmt.Println("importing")
 		commands.ImportDomains(FILENAME, filename, *importDirectiveImportPtr)
+	}
+
+	if planCommand.Parsed() {
+		commands.Plan(FILENAME, planForceDeletePtr)
 	}
 }
