@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"openitstudio.ru/dnscode/providers"
+	"openitstudio.ru/dnscode/utils"
 	"os"
 )
 
@@ -73,16 +73,9 @@ func main() {
 }
 
 func importDomains(fileToSave string) {
-	jsonFile, err := os.Open(FILENAME)
-	if err != nil {
-		fmt.Println(err)
-	}
 
-	defer jsonFile.Close()
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-	var zones providers.Zones
+	var zones = utils.GetZonesFromConfig(FILENAME)
 
-	json.Unmarshal(byteValue, &zones)
 	for i := 0; i < len(zones.Zones); i++ {
 		currentZone := &zones.Zones[i]
 		provider := currentZone.GetProvider()

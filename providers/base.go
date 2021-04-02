@@ -7,6 +7,7 @@ type ZoneProvider struct {
 	Name         string      `json:"name"`
 	Records      []DnsRecord `json:"records"`
 	BaseProvider interface{} `json:"connection"`
+	Include      string      `json:"include"`
 }
 
 func (z ZoneProvider) GetProvider() BaseProvider {
