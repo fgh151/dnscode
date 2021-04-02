@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type RequestParams struct {
@@ -47,6 +48,8 @@ type RegruResponse struct {
 	Answer RegruAnswer `json:"answer"`
 	Result string      `json:"result"`
 }
+
+//https://www.reg.ru/support/help/api2#zone_get_resource_records
 
 func (r RegruProvider) GetRecords(domain string) []DnsRecord {
 
@@ -96,11 +99,7 @@ func (r RegruProvider) crateParams(domain string) []byte {
 
 	var d []RequestDomain
 
-	p := RequestParams{
-		Username:          r.Username,
-		Password:          r.Password,
-		OutputContentType: "json",
-	}
+	p := r.getRequestParams()
 
 	d = append(p.Domains, RequestDomain{Dname: domain})
 
@@ -109,4 +108,24 @@ func (r RegruProvider) crateParams(domain string) []byte {
 	b, _ := json.Marshal(p)
 
 	return b
+}
+
+func (r RegruProvider) getRequestParams() RequestParams {
+
+	user := r.Username
+	pass := r.Password
+
+	if strings.HasPrefix(pass, "ENV_") {
+		pass = os.Getenv(pass)
+	}
+
+	if strings.HasPrefix(user, "ENV_") {
+		user = os.Getenv(user)
+	}
+
+	return RequestParams{
+		Username:          user,
+		Password:          pass,
+		OutputContentType: "json",
+	}
 }

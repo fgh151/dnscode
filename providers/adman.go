@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -56,7 +57,7 @@ func (p AdmanProvider) GetRecords(domain string) []DnsRecord {
 func (p AdmanProvider) getZoneRecords(domainId string) []AdmanZoneRecord {
 
 	surl := "https://adman.com/api/domain/zonelist"
-	authString := fmt.Sprintf("{\"login\":\"%s\",\"mdpass\":\"%s\", \"filter\":[{\"domain_id\": \"%s\"}]}", p.Login, p.Mdpass, domainId)
+	authString := fmt.Sprintf("{\"login\":\"%s\",\"mdpass\":\"%s\", \"filter\":[{\"domain_id\": \"%s\"}]}", p.getLogin(), p.getPass(), domainId)
 	params := url.QueryEscape(authString)
 	payload := strings.NewReader(fmt.Sprintf("req=%s", params))
 	client := &http.Client{}
@@ -76,7 +77,7 @@ func (p AdmanProvider) getZoneRecords(domainId string) []AdmanZoneRecord {
 func (p AdmanProvider) getZones() []AdmanDomain {
 	surl := "https://adman.com/api/domain/list"
 
-	authString := fmt.Sprintf("{\"login\":\"%s\",\"mdpass\":\"%s\"}", p.Login, p.Mdpass)
+	authString := fmt.Sprintf("{\"login\":\"%s\",\"mdpass\":\"%s\"}", p.getLogin(), p.getPass())
 	params := url.QueryEscape(authString)
 	payload := strings.NewReader(fmt.Sprintf("req=%s", params))
 
@@ -93,4 +94,22 @@ func (p AdmanProvider) getZones() []AdmanDomain {
 	defer resp.Body.Close()
 
 	return aResp.Data
+}
+
+func (p AdmanProvider) getLogin() string {
+	l := p.Login
+	if strings.HasPrefix(p.Login, "ENV_") {
+		l = os.Getenv(p.Login)
+	}
+
+	return l
+}
+
+func (p AdmanProvider) getPass() string {
+	mdpass := p.Mdpass
+	if strings.HasPrefix(p.Mdpass, "ENV_") {
+		mdpass = os.Getenv(p.Mdpass)
+	}
+
+	return mdpass
 }

@@ -3,6 +3,8 @@ package providers
 import (
 	"encoding/json"
 	"net/http"
+	"os"
+	"strings"
 )
 
 //https://yandex.ru/dev/pdd/doc/reference/dns-list.html
@@ -42,7 +44,7 @@ func (p YandexProvider) GetRecords(domain string) []DnsRecord {
 
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", url, nil)
-	req.Header.Set("PddToken", p.PddToken)
+	req.Header.Set("PddToken", p.getToken())
 	res, _ := client.Do(req)
 
 	var yaResp YandexResponse
@@ -56,4 +58,12 @@ func (p YandexProvider) GetRecords(domain string) []DnsRecord {
 	}
 
 	return returnAr
+}
+
+func (p YandexProvider) getToken() string {
+	token := p.PddToken
+	if strings.HasPrefix(p.PddToken, "ENV_") {
+		token = os.Getenv(p.PddToken)
+	}
+	return token
 }

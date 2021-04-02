@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/joho/godotenv"
 	"io/ioutil"
 	"openitstudio.ru/dnscode/utils"
 	"os"
@@ -12,6 +13,8 @@ import (
 const FILENAME = "dnscode.json"
 
 func main() {
+
+	godotenv.Load()
 
 	if len(os.Args) < 2 {
 		fmt.Println("list or count subcommand is required")
