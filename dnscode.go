@@ -21,6 +21,7 @@ func main() {
 	importCommand := flag.NewFlagSet("import", flag.ExitOnError)
 
 	importTextPtr := importCommand.String("filename", "", "File name to save. If empty it will override "+FILENAME)
+	importDirectiveImportPtr := importCommand.Bool("useImport", true, "Use import directive, default true")
 
 	switch os.Args[1] {
 	case "import":
@@ -42,7 +43,7 @@ func main() {
 
 		fmt.Println(filename)
 		fmt.Println("importing")
-		importDomains(filename)
+		importDomains(filename, *importDirectiveImportPtr)
 	}
 
 	//jsonFile, err := os.Open(FILENAME)
@@ -72,7 +73,7 @@ func main() {
 
 }
 
-func importDomains(fileToSave string) {
+func importDomains(fileToSave string, useImport bool) {
 
 	var zones = utils.GetZonesFromConfig(FILENAME)
 
@@ -81,6 +82,13 @@ func importDomains(fileToSave string) {
 		provider := currentZone.GetProvider()
 		records := provider.GetRecords(currentZone.Name)
 		currentZone.Records = append(currentZone.Records, records...)
+
+		if useImport {
+			currentZone.Include = currentZone.Name + ".json"
+			currentZoneFile, _ := json.MarshalIndent(currentZone, "", " ")
+			_ = ioutil.WriteFile(currentZone.Name+".json", currentZoneFile, 0644)
+			currentZone.Records = nil
+		}
 	}
 
 	file, _ := json.MarshalIndent(zones, "", " ")
