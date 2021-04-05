@@ -14,17 +14,21 @@ func main() {
 
 	godotenv.Load()
 
-	if len(os.Args) < 2 {
-		fmt.Println("list or count subcommand is required")
-		os.Exit(1)
-	}
-
 	importCommand := flag.NewFlagSet("import", flag.ExitOnError)
 	importTextPtr := importCommand.String("filename", "", "File name to save. If empty it will override "+FILENAME)
 	importDirectiveImportPtr := importCommand.Bool("useImport", true, "Use import directive, default true")
 
 	planCommand := flag.NewFlagSet("plan", flag.ExitOnError)
 	planForceDeletePtr := planCommand.Bool("force", false, "Force delete")
+
+	applyCommand := flag.NewFlagSet("apply", flag.ExitOnError)
+	applyForceDeletePtr := applyCommand.Bool("force", false, "Force delete")
+
+	if len(os.Args) < 2 {
+		fmt.Println("list or count subcommand is required")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
 
 	switch os.Args[1] {
 	case "import":
@@ -50,5 +54,9 @@ func main() {
 
 	if planCommand.Parsed() {
 		commands.Plan(FILENAME, planForceDeletePtr)
+	}
+
+	if applyCommand.Parsed() {
+		commands.Apply(FILENAME, applyForceDeletePtr)
 	}
 }

@@ -25,6 +25,66 @@ type RegruProvider struct {
 	Password string
 }
 
+func (r RegruProvider) AddRecord(record DnsRecord) {
+	var endpoint = ""
+
+	params := map[string]interface{}{
+		"username": r.Username,
+		"password": r.Password,
+	}
+
+	switch record.Type {
+	case "A":
+		endpoint = "https://api.reg.ru/api/regru2/zone/add_alias"
+		params["ipaddr"] = record.Value
+		break
+	case "AAAA":
+		endpoint = "https://api.reg.ru/api/regru2/zone/add_aaaa"
+		params["ipaddr"] = record.Value
+		break
+	case "CNAME":
+		endpoint = "https://api.reg.ru/api/regru2/zone/add_cname"
+		params["canonical_name"] = record.Value
+		break
+	case "MX":
+		endpoint = "https://api.reg.ru/api/regru2/zone/add_mx"
+		params["mail_server"] = record.Value
+		params["priority"] = record.Ttl
+		break
+	case "NS":
+		endpoint = "https://api.reg.ru/api/regru2/zone/add_ns"
+		params["dns_server"] = record.Value
+		params["priority"] = record.Ttl
+		break
+	case "TXT":
+		endpoint = "https://api.reg.ru/api/regru2/zone/add_txt"
+		params["text"] = record.Value
+		break
+	default:
+		endpoint = "https://api.reg.ru/api/regru2/zone/add_txt"
+		params["text"] = record.Value
+		break
+	}
+
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		log.Print(err)
+		os.Exit(1)
+	}
+
+	q := req.URL.Query()
+
+	b, _ := json.Marshal(params)
+
+	q.Add("input_data", string(b))
+	q.Add("input_format", "json")
+
+	req.URL.RawQuery = q.Encode()
+
+	client.Do(req)
+}
+
 type RegruRecord struct {
 	Content string `json:"content"`
 	Prio    int    `json:"prio"`
@@ -90,6 +150,42 @@ func (r RegruProvider) GetRecords(domain string) []DnsRecord {
 	}
 
 	return returnAr
+}
+
+func (r RegruProvider) DeleteRecord(record DnsRecord) {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://api.reg.ru/api/regru2/zone/remove_record", nil)
+	if err != nil {
+		log.Print(err)
+		os.Exit(1)
+	}
+
+	q := req.URL.Query()
+
+	params := struct {
+		Username          string `json:"username"`
+		Password          string `json:"password"`
+		Subdomain         string `json:"subdomain"`
+		Content           string `json:"content"`
+		RecordType        string `json:"record_type"`
+		OutputContentType string `json:"output_content_type"`
+	}{
+		Username:          r.Username,
+		Password:          r.Password,
+		Subdomain:         record.Host,
+		Content:           record.Value,
+		RecordType:        record.Type,
+		OutputContentType: "plain",
+	}
+
+	b, _ := json.Marshal(params)
+
+	q.Add("input_data", string(b))
+	q.Add("input_format", "json")
+
+	req.URL.RawQuery = q.Encode()
+
+	client.Do(req)
 }
 
 func (r RegruProvider) crateParams(domain string) []byte {

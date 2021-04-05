@@ -2,8 +2,10 @@ package providers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -54,10 +56,29 @@ func (p YandexProvider) GetRecords(domain string) []DnsRecord {
 	var returnAr []DnsRecord
 
 	for _, r := range yaResp.Records {
-		returnAr = append(returnAr, DnsRecord{Value: r.Content, Type: r.Type, Host: r.Domain, Ttl: r.Ttl})
+		returnAr = append(returnAr, DnsRecord{Value: r.Content, Type: r.Type, Host: r.Domain, Ttl: r.Ttl, ExternalId: strconv.Itoa(r.RecordId)})
 	}
 
 	return returnAr
+}
+
+func (p YandexProvider) AddRecord(record DnsRecord) {
+	url := fmt.Sprintf("https://pddimp.yandex.ru/api2/admin/dns/list?domain=%s&type=%s&content%s&ttl=%s", record.Host, record.Type, record.Value, strconv.Itoa(record.Ttl))
+
+	client := &http.Client{}
+	req, _ := http.NewRequest("POST", url, nil)
+	req.Header.Set("PddToken", p.getToken())
+	client.Do(req)
+}
+
+func (p YandexProvider) DeleteRecord(record DnsRecord) {
+
+	url := fmt.Sprintf("https://pddimp.yandex.ru/api2/admin/dns/del?domain=%s&record_id=%s", record.Host, record.ExternalId)
+
+	client := &http.Client{}
+	req, _ := http.NewRequest("POST", url, nil)
+	req.Header.Set("PddToken", p.getToken())
+	client.Do(req)
 }
 
 func (p YandexProvider) getToken() string {

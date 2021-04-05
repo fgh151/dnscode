@@ -46,7 +46,7 @@ func (p AdmanProvider) GetRecords(domain string) []DnsRecord {
 			records := p.getZoneRecords(d.DomainId)
 
 			for _, r := range records {
-				returnAr = append(returnAr, DnsRecord{Value: r.Rec, Type: r.Type, Host: r.Subdomain, Ttl: 10})
+				returnAr = append(returnAr, DnsRecord{Value: r.Rec, Type: r.Type, Host: r.Subdomain, Ttl: 10, ExternalId: r.RecId, AdditionalInfo: r.DomainId})
 			}
 		}
 	}
@@ -72,6 +72,47 @@ func (p AdmanProvider) getZoneRecords(domainId string) []AdmanZoneRecord {
 	json.Unmarshal(body, &aResp)
 
 	return aResp.Data
+}
+
+func (p AdmanProvider) AddRecord(record DnsRecord) {
+	surl := "https://adman.com/api/domain/zoneadd"
+
+	rp := map[string]interface{}{
+		"login":     p.getLogin(),
+		"mdpass":    p.getPass(),
+		"rec_id":    record.ExternalId,
+		"domain_id": record.AdditionalInfo,
+		"type":      record.Type,
+		"subdomain": record.Host,
+		"rec":       record.Value,
+		"prior":     record.Ttl,
+	}
+	b, _ := json.Marshal(rp)
+	params := string(b)
+
+	payload := strings.NewReader(fmt.Sprintf("req=%s", params))
+	client := &http.Client{}
+	req, _ := http.NewRequest("POST", surl, payload)
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	client.Do(req)
+}
+
+func (p AdmanProvider) DeleteRecord(record DnsRecord) {
+	surl := "https://adman.com/api/domain/zonedelete"
+	rp := map[string]interface{}{
+		"login":     p.getLogin(),
+		"mdpass":    p.getPass(),
+		"rec_id":    record.ExternalId,
+		"domain_id": record.AdditionalInfo,
+	}
+	b, _ := json.Marshal(rp)
+	params := string(b)
+
+	payload := strings.NewReader(fmt.Sprintf("req=%s", params))
+	client := &http.Client{}
+	req, _ := http.NewRequest("POST", surl, payload)
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	client.Do(req)
 }
 
 func (p AdmanProvider) getZones() []AdmanDomain {

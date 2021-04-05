@@ -39,12 +39,17 @@ type Zones struct {
 }
 
 type DnsRecord struct {
-	Host  string `json:"host"`
-	Type  string `json:"type"`
-	Value string `json:"value"`
-	Ttl   int    `json:"ttl"`
+	Host           string `json:"host"`
+	Type           string `json:"type"`
+	Value          string `json:"value"`
+	Ttl            int    `json:"ttl"`
+	ExternalId     string
+	AdditionalInfo string
 }
 
 type BaseProvider interface {
 	GetRecords(domain string) []DnsRecord
+
+	DeleteRecord(record DnsRecord)
+	AddRecord(record DnsRecord)
 }
