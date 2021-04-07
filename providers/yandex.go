@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	http2 "openitstudio.ru/dnscode/http"
 	"os"
 	"strconv"
 	"strings"
@@ -44,10 +45,10 @@ func (p YandexProvider) GetRecords(domain string) []DnsRecord {
 
 	url := "https://pddimp.yandex.ru/api2/admin/dns/list?domain=" + domain
 
-	client := &http.Client{}
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("PddToken", p.getToken())
-	res, _ := client.Do(req)
+
+	res, _ := p.getClient().Do(req)
 
 	var yaResp YandexResponse
 	json.NewDecoder(res.Body).Decode(&yaResp)
@@ -65,20 +66,25 @@ func (p YandexProvider) GetRecords(domain string) []DnsRecord {
 func (p YandexProvider) AddRecord(record DnsRecord) {
 	url := fmt.Sprintf("https://pddimp.yandex.ru/api2/admin/dns/list?domain=%s&type=%s&content%s&ttl=%s", record.Host, record.Type, record.Value, strconv.Itoa(record.Ttl))
 
-	client := &http.Client{}
 	req, _ := http.NewRequest("POST", url, nil)
 	req.Header.Set("PddToken", p.getToken())
-	client.Do(req)
+
+	p.getClient().Do(req)
 }
 
 func (p YandexProvider) DeleteRecord(record DnsRecord) {
 
 	url := fmt.Sprintf("https://pddimp.yandex.ru/api2/admin/dns/del?domain=%s&record_id=%s", record.Host, record.ExternalId)
 
-	client := &http.Client{}
 	req, _ := http.NewRequest("POST", url, nil)
 	req.Header.Set("PddToken", p.getToken())
-	client.Do(req)
+
+	p.getClient().Do(req)
+}
+
+func (p YandexProvider) getClient() *http.Client {
+	c, _ := http2.CreateHttpClient()
+	return c
 }
 
 func (p YandexProvider) getToken() string {

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	http2 "openitstudio.ru/dnscode/http"
 	"os"
 	"strings"
 )
@@ -60,10 +61,11 @@ func (p AdmanProvider) getZoneRecords(domainId string) []AdmanZoneRecord {
 	authString := fmt.Sprintf("{\"login\":\"%s\",\"mdpass\":\"%s\", \"filter\":[{\"domain_id\": \"%s\"}]}", p.getLogin(), p.getPass(), domainId)
 	params := url.QueryEscape(authString)
 	payload := strings.NewReader(fmt.Sprintf("req=%s", params))
-	client := &http.Client{}
 	req, _ := http.NewRequest("POST", surl, payload)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	resp, _ := client.Do(req)
+
+	c, _ := http2.CreateHttpClient()
+	resp, _ := c.Do(req)
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	defer resp.Body.Close()
@@ -91,10 +93,11 @@ func (p AdmanProvider) AddRecord(record DnsRecord) {
 	params := string(b)
 
 	payload := strings.NewReader(fmt.Sprintf("req=%s", params))
-	client := &http.Client{}
 	req, _ := http.NewRequest("POST", surl, payload)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	client.Do(req)
+
+	c, _ := http2.CreateHttpClient()
+	c.Do(req)
 }
 
 func (p AdmanProvider) DeleteRecord(record DnsRecord) {
@@ -109,10 +112,11 @@ func (p AdmanProvider) DeleteRecord(record DnsRecord) {
 	params := string(b)
 
 	payload := strings.NewReader(fmt.Sprintf("req=%s", params))
-	client := &http.Client{}
 	req, _ := http.NewRequest("POST", surl, payload)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	client.Do(req)
+
+	c, _ := http2.CreateHttpClient()
+	c.Do(req)
 }
 
 func (p AdmanProvider) getZones() []AdmanDomain {
@@ -122,10 +126,11 @@ func (p AdmanProvider) getZones() []AdmanDomain {
 	params := url.QueryEscape(authString)
 	payload := strings.NewReader(fmt.Sprintf("req=%s", params))
 
-	client := &http.Client{}
 	req, _ := http.NewRequest("POST", surl, payload)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	resp, _ := client.Do(req)
+
+	c, _ := http2.CreateHttpClient()
+	resp, _ := c.Do(req)
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	var aResp DomainListResponse

@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	http2 "openitstudio.ru/dnscode/http"
 	"os"
 	"strings"
 )
@@ -66,7 +67,6 @@ func (r RegruProvider) AddRecord(record DnsRecord) {
 		break
 	}
 
-	client := &http.Client{}
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
 		log.Print(err)
@@ -82,7 +82,8 @@ func (r RegruProvider) AddRecord(record DnsRecord) {
 
 	req.URL.RawQuery = q.Encode()
 
-	client.Do(req)
+	c, _ := http2.CreateHttpClient()
+	c.Do(req)
 }
 
 type RegruRecord struct {
@@ -112,7 +113,6 @@ type RegruResponse struct {
 
 func (r RegruProvider) GetRecords(domain string) []DnsRecord {
 
-	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://api.reg.ru/api/regru2/zone/get_resource_records", nil)
 	if err != nil {
 		log.Print(err)
@@ -126,7 +126,9 @@ func (r RegruProvider) GetRecords(domain string) []DnsRecord {
 
 	req.URL.RawQuery = q.Encode()
 
-	resp, _ := client.Do(req)
+	c, _ := http2.CreateHttpClient()
+
+	resp, _ := c.Do(req)
 
 	body, _ := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
@@ -153,7 +155,6 @@ func (r RegruProvider) GetRecords(domain string) []DnsRecord {
 }
 
 func (r RegruProvider) DeleteRecord(record DnsRecord) {
-	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://api.reg.ru/api/regru2/zone/remove_record", nil)
 	if err != nil {
 		log.Print(err)
@@ -185,7 +186,8 @@ func (r RegruProvider) DeleteRecord(record DnsRecord) {
 
 	req.URL.RawQuery = q.Encode()
 
-	client.Do(req)
+	c, _ := http2.CreateHttpClient()
+	c.Do(req)
 }
 
 func (r RegruProvider) crateParams(domain string) []byte {
