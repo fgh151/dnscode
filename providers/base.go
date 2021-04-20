@@ -43,6 +43,7 @@ type DnsRecord struct {
 	Type           string `json:"type"`
 	Value          string `json:"value"`
 	Ttl            int    `json:"ttl"`
+	Subdomain      string `json:"subdomain"`
 	ExternalId     string
 	AdditionalInfo string
 }

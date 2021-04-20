@@ -1,8 +1,10 @@
 package providers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	http2 "openitstudio.ru/dnscode/http"
 	"os"
@@ -57,16 +59,31 @@ func (p YandexProvider) GetRecords(domain string) []DnsRecord {
 	var returnAr []DnsRecord
 
 	for _, r := range yaResp.Records {
-		returnAr = append(returnAr, DnsRecord{Value: r.Content, Type: r.Type, Host: r.Subdomain, Ttl: r.Ttl, ExternalId: strconv.Itoa(r.RecordId)})
+		returnAr = append(returnAr, DnsRecord{Value: r.Content, Type: r.Type, Host: r.Domain, Subdomain: r.Subdomain, Ttl: r.Ttl, ExternalId: strconv.Itoa(r.RecordId)})
 	}
 
 	return returnAr
 }
 
 func (p YandexProvider) AddRecord(record DnsRecord) {
-	url := fmt.Sprintf("https://pddimp.yandex.ru/api2/admin/dns/list?domain=%s&type=%s&content%s&ttl=%s", record.Host, record.Type, record.Value, strconv.Itoa(record.Ttl))
+	url := "https://pddimp.yandex.ru/api2/admin/dns/add"
 
-	req, _ := http.NewRequest("POST", url, nil)
+	payload := &bytes.Buffer{}
+	writer := multipart.NewWriter(payload)
+	_ = writer.WriteField("domain", record.Host)
+	_ = writer.WriteField("type", record.Type)
+	_ = writer.WriteField("content", record.Value)
+	_ = writer.WriteField("subdomain", record.Subdomain)
+	_ = writer.WriteField("ttl", strconv.Itoa(record.Ttl))
+
+	err := writer.Close()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	req, _ := http.NewRequest("POST", url, payload)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.Header.Set("PddToken", p.getToken())
 
 	p.getClient().Do(req)
