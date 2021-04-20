@@ -48,11 +48,11 @@ func analyze(configFile string, force *bool, callbackDelete callback, callbackAd
 }
 
 func printDelete(record providers.DnsRecord, provider providers.ZoneProvider) {
-	fmt.Println(fmt.Sprintf("DELETE %s %s %s %d", record.Host, record.Type, record.Value, record.Ttl))
+	fmt.Println(fmt.Sprintf(provider.Name+" / DELETE %s %s %s %d", record.Host, record.Type, record.Value, record.Ttl))
 }
 
 func printAdd(record providers.DnsRecord, provider providers.ZoneProvider) {
-	fmt.Println(fmt.Sprintf("ADD %s %s %s %d", record.Host, record.Type, record.Value, record.Ttl))
+	fmt.Println(fmt.Sprintf(provider.Name+" / ADD %s %s %s %d", record.Host, record.Type, record.Value, record.Ttl))
 }
 
 func deleteRecord(record providers.DnsRecord, provider providers.ZoneProvider) {
