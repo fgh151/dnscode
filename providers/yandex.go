@@ -57,7 +57,7 @@ func (p YandexProvider) GetRecords(domain string) []DnsRecord {
 	var returnAr []DnsRecord
 
 	for _, r := range yaResp.Records {
-		returnAr = append(returnAr, DnsRecord{Value: r.Content, Type: r.Type, Host: r.Domain, Ttl: r.Ttl, ExternalId: strconv.Itoa(r.RecordId)})
+		returnAr = append(returnAr, DnsRecord{Value: r.Content, Type: r.Type, Host: r.Subdomain, Ttl: r.Ttl, ExternalId: strconv.Itoa(r.RecordId)})
 	}
 
 	return returnAr
