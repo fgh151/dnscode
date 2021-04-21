@@ -33,9 +33,10 @@ func ImportDomains(configFile string, fileToSave string, useImport bool) {
 		currentZone.Records = append(currentZone.Records, records...)
 
 		if useImport {
+			currentZone.Include = ""
+			currentZoneFileContent, _ := json.MarshalIndent(currentZone, "", " ")
+			_ = ioutil.WriteFile(currentZone.Name+".json", currentZoneFileContent, 0644)
 			currentZone.Include = currentZone.Name + ".json"
-			currentZoneFile, _ := json.MarshalIndent(currentZone, "", " ")
-			_ = ioutil.WriteFile(currentZone.Name+".json", currentZoneFile, 0644)
 			currentZone.Records = nil
 		}
 	}
