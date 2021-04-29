@@ -33,6 +33,7 @@ func main() {
 
 	switch os.Args[1] {
 	case "import":
+		localHttp.SetProxy(*proxyPtr)
 		filename := *importTextPtr
 		if filename == "" {
 			filename = FILENAME
