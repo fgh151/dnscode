@@ -22,6 +22,7 @@ func main() {
 	var proxyPtr = flag.String("proxy", "", "Proxy server")
 	var importPtr = flag.Bool("useImport", true, "Use import directive, default true")
 	var importTextPtr = flag.String("filename", "", "File name to save. If empty it will override "+FILENAME)
+	var interactivePtr = flag.Bool("interactive", true, "Confirm apply?")
 
 	flag.Parse()
 
@@ -46,7 +47,10 @@ func main() {
 	case "apply":
 		localHttp.SetProxy(*proxyPtr)
 		commands.Plan(FILENAME, forcePtr)
-		if confirm("Apply?", 3) {
+
+		if *interactivePtr && confirm("Apply?", 3) {
+			commands.Apply(FILENAME, forcePtr)
+		} else {
 			commands.Apply(FILENAME, forcePtr)
 		}
 	default:
