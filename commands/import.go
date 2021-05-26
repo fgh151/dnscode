@@ -15,7 +15,7 @@ func GetRemoteZones(configFile string) providers.Zones {
 		currentZone := providers.ZoneProvider{Name: localZones.Zones[i].Name}
 		provider := localZones.Zones[i].GetProvider()
 		records := provider.GetRecords(localZones.Zones[i].Name)
-		currentZone.Records = append(currentZone.Records, records...)
+		currentZone.Records = records
 		remoteZones.Zones = append(remoteZones.Zones, currentZone)
 	}
 
