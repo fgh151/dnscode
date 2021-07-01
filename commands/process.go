@@ -25,7 +25,7 @@ func analyze(configFile string, force *bool, callbackDelete callback, callbackAd
 							}
 						}
 						if del {
-							callbackDelete(remoteRecord, remoteZone)
+							callbackDelete(remoteRecord, localZone)
 						}
 					}
 				}
@@ -48,11 +48,11 @@ func analyze(configFile string, force *bool, callbackDelete callback, callbackAd
 }
 
 func printDelete(record providers.DnsRecord, provider providers.ZoneProvider) {
-	fmt.Println(fmt.Sprintf(provider.Name+" / DELETE %s %s %s %d", record.Host, record.Type, record.Value, record.Ttl))
+	utils.PrintlnWarning(fmt.Sprintf(provider.Name+" / DELETE %s %s %s %d", record.Subdomain, record.Type, record.Value, record.Ttl))
 }
 
 func printAdd(record providers.DnsRecord, provider providers.ZoneProvider) {
-	fmt.Println(fmt.Sprintf(provider.Name+" / ADD %s %s %s %d", record.Host, record.Type, record.Value, record.Ttl))
+	utils.PrintInfo(fmt.Sprintf(provider.Name+" / ADD %s %s %s %d", record.Host, record.Type, record.Value, record.Ttl))
 }
 
 func deleteRecord(record providers.DnsRecord, provider providers.ZoneProvider) {
