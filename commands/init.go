@@ -8,6 +8,7 @@ import (
 	"openitstudio.ru/dnscode/providers"
 	"openitstudio.ru/dnscode/utils/fs"
 	"os"
+	"runtime"
 	"strconv"
 )
 
@@ -15,7 +16,7 @@ func DownloadProviders(zones providers.Zones) {
 	for _, zone := range zones.Zones {
 		name := zone.Provider
 		path := fs.GetWorkDir() + "/.providers/" + name + ".so"
-		uri := "https://github.com/fgh151/dnscode/releases/latest/download/" + name + ".so"
+		uri := "https://github.com/fgh151/dnscode/releases/latest/download/" + name + "-" + runtime.GOOS + "-" + runtime.GOARCH + ".so"
 		if false == fs.FileExists(path) {
 			err := downloadFile(path, uri)
 			if err != nil {
