@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"openitstudio.ru/dnscode/providers"
+	"openitstudio.ru/dnscode/utils/fs"
 	"os"
 )
 
@@ -21,7 +22,7 @@ func GetZonesFromConfig(filename string) providers.Zones {
 	json.Unmarshal(byteValue, &zones)
 
 	for i, z := range zones.Zones {
-		if z.Include != "" && fileExists(z.Include) {
+		if z.Include != "" && fs.FileExists(z.Include) {
 			incFileName := z.Include
 			zones.Zones = remove(zones.Zones, i)
 			zones.Zones = append(zones.Zones, readIncludeFile(incFileName))
@@ -48,12 +49,4 @@ func readIncludeFile(fileName string) providers.ZoneProvider {
 func remove(s []providers.ZoneProvider, i int) []providers.ZoneProvider {
 	s[len(s)-1], s[i] = s[i], s[len(s)-1]
 	return s[:len(s)-1]
-}
-
-func fileExists(filename string) bool {
-	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return !info.IsDir()
 }

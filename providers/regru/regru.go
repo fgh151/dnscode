@@ -1,4 +1,4 @@
-package providers
+package main
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	http2 "openitstudio.ru/dnscode/http"
+	"openitstudio.ru/dnscode/providers"
 	"os"
 	"strings"
 )
@@ -26,7 +27,7 @@ type RegruProvider struct {
 	Password string
 }
 
-func (r RegruProvider) AddRecord(record DnsRecord) {
+func (r RegruProvider) AddRecord(record providers.DnsRecord) {
 	var endpoint = ""
 
 	params := map[string]interface{}{
@@ -111,7 +112,7 @@ type RegruResponse struct {
 
 //https://www.reg.ru/support/help/api2#zone_get_resource_records
 
-func (r RegruProvider) GetRecords(domain string) []DnsRecord {
+func (r RegruProvider) GetRecords(domain string) []providers.DnsRecord {
 
 	req, err := http.NewRequest("GET", "https://api.reg.ru/api/regru2/zone/get_resource_records", nil)
 	if err != nil {
@@ -136,12 +137,12 @@ func (r RegruProvider) GetRecords(domain string) []DnsRecord {
 	var rResp RegruResponse
 	json.Unmarshal(body, &rResp)
 
-	var returnAr []DnsRecord
+	var returnAr []providers.DnsRecord
 
 	for _, d := range rResp.Answer.Domains {
 		if d.Dname == domain {
 			for _, rrs := range d.Rrs {
-				returnAr = append(returnAr, DnsRecord{
+				returnAr = append(returnAr, providers.DnsRecord{
 					Host:  rrs.Subname,
 					Type:  rrs.Rectype,
 					Value: rrs.Content,
@@ -154,7 +155,7 @@ func (r RegruProvider) GetRecords(domain string) []DnsRecord {
 	return returnAr
 }
 
-func (r RegruProvider) DeleteRecord(record DnsRecord) {
+func (r RegruProvider) DeleteRecord(record providers.DnsRecord) {
 	req, err := http.NewRequest("GET", "https://api.reg.ru/api/regru2/zone/remove_record", nil)
 	if err != nil {
 		log.Print(err)
@@ -224,3 +225,6 @@ func (r RegruProvider) getRequestParams() RequestParams {
 		OutputContentType: "json",
 	}
 }
+
+//goland:noinspection GoUnusedGlobalVariable
+var Provider RegruProvider

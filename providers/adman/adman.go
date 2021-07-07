@@ -1,4 +1,4 @@
-package providers
+package main
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	http2 "openitstudio.ru/dnscode/http"
+	"openitstudio.ru/dnscode/providers"
 	"os"
 	"strings"
 )
@@ -38,16 +39,16 @@ type AdmanZoneRecord struct {
 	Prior     string `json:"prior"`
 }
 
-func (p AdmanProvider) GetRecords(domain string) []DnsRecord {
+func (p AdmanProvider) GetRecords(domain string) []providers.DnsRecord {
 	domains := p.getZones()
 
-	var returnAr []DnsRecord
+	var returnAr []providers.DnsRecord
 	for _, d := range domains {
 		if domain == d.Domain {
 			records := p.getZoneRecords(d.DomainId)
 
 			for _, r := range records {
-				returnAr = append(returnAr, DnsRecord{Value: r.Rec, Type: r.Type, Host: r.Subdomain, Ttl: 10, ExternalId: r.RecId, AdditionalInfo: r.DomainId})
+				returnAr = append(returnAr, providers.DnsRecord{Value: r.Rec, Type: r.Type, Host: r.Subdomain, Ttl: 10, ExternalId: r.RecId, AdditionalInfo: r.DomainId})
 			}
 		}
 	}
@@ -76,7 +77,7 @@ func (p AdmanProvider) getZoneRecords(domainId string) []AdmanZoneRecord {
 	return aResp.Data
 }
 
-func (p AdmanProvider) AddRecord(record DnsRecord) {
+func (p AdmanProvider) AddRecord(record providers.DnsRecord) {
 	surl := "https://adman.com/api/domain/zoneadd"
 
 	rp := map[string]interface{}{
@@ -100,7 +101,7 @@ func (p AdmanProvider) AddRecord(record DnsRecord) {
 	c.Do(req)
 }
 
-func (p AdmanProvider) DeleteRecord(record DnsRecord) {
+func (p AdmanProvider) DeleteRecord(record providers.DnsRecord) {
 	surl := "https://adman.com/api/domain/zonedelete"
 	rp := map[string]interface{}{
 		"login":     p.getLogin(),
@@ -159,3 +160,6 @@ func (p AdmanProvider) getPass() string {
 
 	return mdpass
 }
+
+//goland:noinspection GoUnusedGlobalVariable
+var Provider AdmanProvider
