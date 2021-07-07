@@ -53,6 +53,8 @@ func main() {
 		} else {
 			commands.Apply(FILENAME, forcePtr)
 		}
+	case "init":
+		commands.Init(FILENAME)
 	default:
 		flag.PrintDefaults()
 		os.Exit(1)

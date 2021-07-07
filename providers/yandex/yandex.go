@@ -1,4 +1,4 @@
-package providers
+package main
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	http2 "openitstudio.ru/dnscode/http"
+	"openitstudio.ru/dnscode/providers"
 	"os"
 	"strconv"
 	"strings"
@@ -14,7 +15,7 @@ import (
 
 //https://yandex.ru/dev/pdd/doc/reference/dns-list.html
 
-type YandexProvider struct {
+type yandexProvider struct {
 	PddToken string
 }
 
@@ -43,9 +44,9 @@ type YandexRecord struct {
 	Type      string `json:"type"`
 }
 
-func (p YandexProvider) GetRecords(domain string) []DnsRecord {
+func (p yandexProvider) GetRecords(domain string) []providers.DnsRecord {
 
-	url := "https://pddimp.yandex.ru/api2/admin/dns/list?domain=" + domain
+	url := "https://pddimp.yandex.ru/api2/adman/dns/list?domain=" + domain
 
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("PddToken", p.getToken())
@@ -56,17 +57,17 @@ func (p YandexProvider) GetRecords(domain string) []DnsRecord {
 	json.NewDecoder(res.Body).Decode(&yaResp)
 	defer res.Body.Close()
 
-	var returnAr []DnsRecord
+	var returnAr []providers.DnsRecord
 
 	for _, r := range yaResp.Records {
-		returnAr = append(returnAr, DnsRecord{Value: r.Content, Type: r.Type, Host: r.Domain, Subdomain: r.Subdomain, Ttl: r.Ttl, ExternalId: strconv.Itoa(r.RecordId)})
+		returnAr = append(returnAr, providers.DnsRecord{Value: r.Content, Type: r.Type, Host: r.Domain, Subdomain: r.Subdomain, Ttl: r.Ttl, ExternalId: strconv.Itoa(r.RecordId)})
 	}
 
 	return returnAr
 }
 
-func (p YandexProvider) AddRecord(record DnsRecord) {
-	url := "https://pddimp.yandex.ru/api2/admin/dns/add"
+func (p yandexProvider) AddRecord(record providers.DnsRecord) {
+	url := "https://pddimp.yandex.ru/api2/adman/dns/add"
 
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
@@ -89,9 +90,9 @@ func (p YandexProvider) AddRecord(record DnsRecord) {
 	p.getClient().Do(req)
 }
 
-func (p YandexProvider) DeleteRecord(record DnsRecord) {
+func (p yandexProvider) DeleteRecord(record providers.DnsRecord) {
 
-	url := fmt.Sprintf("https://pddimp.yandex.ru/api2/admin/dns/del?domain=%s&record_id=%s", record.Host, record.ExternalId)
+	url := fmt.Sprintf("https://pddimp.yandex.ru/api2/adman/dns/del?domain=%s&record_id=%s", record.Host, record.ExternalId)
 
 	req, _ := http.NewRequest("POST", url, nil)
 	req.Header.Set("PddToken", p.getToken())
@@ -99,15 +100,18 @@ func (p YandexProvider) DeleteRecord(record DnsRecord) {
 	p.getClient().Do(req)
 }
 
-func (p YandexProvider) getClient() *http.Client {
+func (p yandexProvider) getClient() *http.Client {
 	c, _ := http2.CreateHttpClient()
 	return c
 }
 
-func (p YandexProvider) getToken() string {
+func (p yandexProvider) getToken() string {
 	token := p.PddToken
 	if strings.HasPrefix(p.PddToken, "ENV_") {
 		token = os.Getenv(p.PddToken)
 	}
 	return token
 }
+
+//goland:noinspection GoUnusedGlobalVariable
+var Provider yandexProvider

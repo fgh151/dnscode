@@ -72,3 +72,8 @@ func Plan(configFile string, force *bool) {
 func Apply(configFile string, force *bool) {
 	analyze(configFile, force, deleteRecord, addRecord)
 }
+
+func Init(configFile string) {
+	zones := utils.GetZonesFromConfig(configFile)
+	DownloadProviders(zones)
+}

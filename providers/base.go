@@ -1,6 +1,13 @@
 package providers
 
-import "github.com/mitchellh/mapstructure"
+import (
+	"fmt"
+	"github.com/mitchellh/mapstructure"
+	"openitstudio.ru/dnscode/utils/fs"
+	"os"
+	"plugin"
+	//"openitstudio.ru/dnscode/providers/adman"
+)
 
 type ZoneProvider struct {
 	Provider     string      `json:"provider"`
@@ -13,22 +20,20 @@ type ZoneProvider struct {
 func (z ZoneProvider) GetProvider() BaseProvider {
 	var provider BaseProvider
 
-	//
-	switch z.Provider {
-	case "yandex":
-		{
-			provider = YandexProvider{}
-		}
-	case "adman":
-		{
-			provider = AdmanProvider{}
-		}
-	case "regru":
-		{
-			provider = RegruProvider{}
-		}
+	var providerName = z.Provider
+
+	p, err := plugin.Open(fs.GetWorkDir() + "/.providers/" + providerName + ".so")
+	if err != nil {
+		fmt.Println("No provider " + providerName + " found! run init command")
+		os.Exit(0)
 	}
 
+	importedProvider, err := p.Lookup("Provider")
+	if err != nil {
+		panic(err)
+	}
+
+	provider, _ = importedProvider.(BaseProvider)
 	mapstructure.Decode(z.BaseProvider, &provider)
 
 	return provider
