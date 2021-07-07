@@ -29,4 +29,4 @@ jobs:
       - name: Build yandex provider
         run: cd providers/yandex && GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} build --buildmode=plugin -o yandex-${{ matrix.goos }}-${{ matrix.goarch }}.so && cd ../../
       - name: Upload yandex provider
-        run: github-assets-uploader -f providers/yandex/yandex-${{ matrix.goos }}-${{ matrix.goarch }}.so -mediatype application/x-binary -repo dnscode -token ${{ secrets.GITHUB_TOKEN }} -tag ${GITHUB_REF##*/}
+        run: github-assets-uploader -f providers/yandex/yandex-${{ matrix.goos }}-${{ matrix.goarch }}.so -mediatype application/x-binary -repo fgh151/dnscode -token ${{ secrets.GITHUB_TOKEN }} -tag ${GITHUB_REF##*/}
